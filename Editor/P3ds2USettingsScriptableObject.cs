@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json;
 using UnityEditor;
 using UnityEditor.VersionControl;
 using UnityEngine;
@@ -16,7 +17,7 @@ namespace P3DS2U.Editor
                 var settings = FindSettingsInProject();
                 if (settings == null)
                 {
-                    string filePath = EditorUtility.SaveFilePanel("Choose the folder where to save the new Import Settings", PokemonImporter.ImportPath, SettingsFileName, "asset");
+                    string filePath = EditorUtility.SaveFilePanelInProject("Choose the folder where to save the new Import Settings", SettingsFileName, "asset", "Save", PokemonImporter.ImportPath);
                     if (string.IsNullOrEmpty(filePath))
                         filePath = PokemonImporter.ImportPath + SettingsFileName;
 
@@ -24,9 +25,11 @@ namespace P3DS2U.Editor
                     return GetOrCreateSettings(_focus);
                 }
 
-                if (_focus)
-                    Selection.activeObject = settings;
+                if (_focus) {
+                   Selection.activeObject = settings;
+                }
 
+                Pokemon3DSToUnityEditorWindow.settings = settings;
                 return settings;
           }
 
@@ -100,6 +103,13 @@ namespace P3DS2U.Editor
       public string OcclusionMapOffset =  ("_OcclusionMapOffset");
       public string Constant4Color =  ("_Constant4Color");
       public string Constant3Color =  ("_Constant3Color");
+
+      public string Tex0TranslateX = "material._BaseMapOffset.x";
+      public string Tex1TranslateX = "material._OcclusionMapOffset.x";
+      public string Tex2TranslateX = "material._NormalMapOffset.x";
+      public string Tex0TranslateY = "material._BaseMapOffset.y";
+      public string Tex1TranslateY = "material._OcclusionMapOffset.y";
+      public string Tex2TranslateY = "material._NormalMapOffset.y";
    }
    
    [Serializable]
@@ -160,8 +170,9 @@ namespace P3DS2U.Editor
    
    public class P3ds2USettingsScriptableObject : ScriptableObject
    {
+      [HideInInspector] public string PackageVersion = "";
 
-      private bool _generated;
+         private bool _generated;
       [SerializeField] public WhatToImport ImporterSettings;
       
       [SerializeField] private List<MergedBinary> mergedBinariesPreview;
@@ -176,8 +187,22 @@ namespace P3DS2U.Editor
         public string ExportPath { get { return ImporterSettings.ExportPath; } }
         public string ImportPath { get { return ImporterSettings.ImportPath; } }
 
+        [Serializable]
+        public class PackageJsonObject
+        {
+           public string version;
+        }
+        
       private P3ds2USettingsScriptableObject ()
       {
+         try {
+            var packageJsonObject =
+               JsonUtility.FromJson<PackageJsonObject> (File.ReadAllText ("Assets/3dsToUnity/package.json"));
+            PackageVersion = packageJsonObject.version;
+         }
+         catch (Exception) {
+            //ignored
+         }
          customShaderSettings = new P3ds2UShaderProperties ();
             ImporterSettings = new WhatToImport {
                 StartIndex = 0,
@@ -334,6 +359,11 @@ namespace P3DS2U.Editor
 
             var wti = settingsTarget.ImporterSettings;
             EditorGUILayout.BeginVertical();
+                        
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Label("Version: " + settingsTarget.PackageVersion + "\n");
+            EditorGUILayout.EndHorizontal();
+
             EditorGUILayout.BeginHorizontal();
             GUILayout.Label("Paths");
             EditorGUILayout.EndHorizontal();
