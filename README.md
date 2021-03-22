@@ -18,6 +18,12 @@ Usage:
 - Hit import again
 - Exported files and prefabs get added to  `Assets/Exported`
 
+For a step-by-step guide / more info: https://gbatemp.net/threads/tutorial-export-your-pokemon-animated-models-from-3ds-to-unity-engine-3d.532962/ 
+
+Troubleshooting:
+-
+If you face any issues or just looking for a community of likeminded developers:  https://discord.gg/zZVQYh7W (Discord Server)
+
 Contributions:
 -
 If you would like to contribute to this project, I would recommend going through the TODOs at the top of `PokemonImporter.cs` in the `main` branch:
@@ -57,6 +63,7 @@ Updating:
 
 ChangeLog:
 -
+- v1.9: Fix (Changed parser to allow reading of Binaries that are set to read only.)
 - v1.8: Fixes, delete settings to regenerate defaults, custom shader support for material animations
 - v1.7: Fire Shader
 - v1.6: Full material / vis animation support, bunch of fixes related to animations and skipping corrupt files etc.
